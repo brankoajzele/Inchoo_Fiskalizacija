@@ -1,0 +1,291 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Inchoo
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Please do not edit or add to this file if you wish to upgrade
+ * Magento or this extension to newer versions in the future.
+ * Inchoo developers (Inchooer's) give their best to conform to
+ * "non-obtrusive, best Magento practices" style of coding.
+ * However, Inchoo does not guarantee functional accuracy of
+ * specific extension behavior. Additionally we take no responsibility
+ * for any possible issue(s) resulting from extension usage.
+ * We reserve the full right not to provide any kind of support for our free extensions.
+ * Thank you for your understanding.
+ *
+ * @category    Inchoo
+ * @package     Inchoo_Fiskalizacija
+ * @author      Branko Ajzele <ajzele@gmail.com>
+ * @copyright   Copyright (c) Inchoo (http://inchoo.net/)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+-->
+<config>
+    <sections>
+        <inchoo_fiskalizacija translate="label" module="inchoo_fiskalizacija">
+            <label>Fiskalizacija</label>
+            <tab>service</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>200</sort_order>
+            <show_in_default>0</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>0</show_in_store>
+            <groups>
+                <settings translate="label">
+                    <label>Osnovne postavke</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <active translate="label">
+                            <label>Omogućeno</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </active>
+
+                        <certificate_pass translate="label">
+                            <label>Zaporka certifikata</label>
+                            <frontend_type>password</frontend_type>
+                            <comment><![CDATA[Zaporka korištena prilikom exporta certifikata na MS Windows platformi. Certifikati bez zaporke neće biti prihvaćeni.]]></comment>
+                            <sort_order>30</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </certificate_pass>                                                
+                                                                                                                                             
+                        <certificate_pfx translate="label comment">
+                            <label>Aplikativni certifikat</label>
+                            <frontend_type>file</frontend_type>
+                            <backend_model>inchoo_fiskalizacija/system_config_backend_cert</backend_model>
+                            <comment><![CDATA[Aplikativni certifikat izdan od strane FINA-e. Certifikat je potrebno skinuti preko MS Windows računala i exportati ga u .pfx format te takvog ga priložiti ovdje.]]></comment>
+                            <sort_order>40</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </certificate_pfx>
+
+                        <certificate_ca_pem translate="label comment">
+                            <label>Verifikacijski/root (samopotpisani) certifikat CA</label>
+                            <frontend_type>file</frontend_type>
+                            <upload_dir config="system/filesystem/media" scope_info="1">inchoo_fiskalizacija/certificate/CA</upload_dir>
+                            <backend_model>inchoo_fiskalizacija/system_config_backend_cert_ca</backend_model>
+                            <comment><![CDATA[http://demo-pki.fina.hr/, .cer certifikat.]]></comment>
+                            <sort_order>50</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </certificate_ca_pem>
+                        
+                        <oib translate="label comment">
+                            <label>OIB</label>
+                            <comment><![CDATA[Osobni identifikacijski broj (OIB) je stalna identifikacijska oznaka svakog hrvatskog državljana i pravne osobe sa sjedištem u Republici Hrvatskoj. Određuje ga i dodjeljuje Ministarstvo financija - Porezna uprava.]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>60</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </oib>
+                        
+                        <FiskalizacijaSOAPServerEndpoint>
+                            <label>Url adresa za spajanje na CIS Porezne uprave</label>
+                            <comment><![CDATA[Testni server: <strong>https://cistest.apis-it.hr:8449/FiskalizacijaServiceTest</strong>. Produkcijski server: <strong>https://cis.porezna-uprava.hr:8449/FiskalizacijaService</strong>.]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>70</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>                            
+                        </FiskalizacijaSOAPServerEndpoint>
+                    </fields>
+                </settings>             
+                <PoslovniProstor translate="label">
+                    <label>Poslovni prostor</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <comment><![CDATA[
+<div class="config-heading"><div class="heading"><strong>Prijava novootvorenog poslovnog prostora</strong><span class="heading-intro">Prijavu novootvorenog poslovnog prostora je potrebno dostaviti prije slanja prvog računa koji se odnosi na taj poslovni prostor.<br /><br />Kako biste prijavili novootvoreni poslovni prostor slijedite ove korake:<br />
+1) Obavezno popuniti sve podatke gore pod grupom "Osnovne Postavke"<br />
+2) Obavezno popuniti sve podatke dolje tj. pod ovom grupom "Poslovni Prostor"<br />
+3) Kliknuti na "Save Config" dugme gore desno<br />
+4) kliknuti na dugme desno, "Prijavi poslovni prostor"<br /><i>Jednom uspješno prijavljen poslovni prostor ne mora se više prijavljivati.</i></span></div><div class="button-container"><button type="button" class="button" onclick="PPConfigJS_businessUnitReport();">Prijavi poslovni prostor</button></div></div> <br />
+                        
+<div class="config-heading"><div class="heading"><strong>Prijava promjene adrese poslovnog prostora</strong><span class="heading-intro">Kako biste prijavili promjenu adrese poslovnog prostor-a slijedite ove korake:<br />
+1) Obavezno popuniti sve podatke gore pod grupom "Osnovne Postavke"<br />
+2) Obavezno popuniti sve podatke dolje tj. pod ovom grupom "Poslovni Prostor"<br />
+3) Kliknuti na "Save Config" dugme gore desno<br />
+4) Biti sugurni kako ste prethodno barem jednom obavili prijavu novootvorenog poslovnog prostora<br />
+5) kliknuti na dugme desno, "Prijavi promjenu adrese"<br /><i>Svaku promjenu adrese potrebno je prijaviti.</i>
+</span></div><div class="button-container"><button type="button" class="button" onclick="PPConfigJS_businessUnitReport();">Prijavi promjenu adrese</button></div></div>     
+                        
+<div class="config-heading"><div class="heading"><strong>Prijava promjene radnog vremena poslovnog prostora</strong><span class="heading-intro">Kako biste prijavili promjenu adrese poslovnog prostor-a slijedite ove korake:<br />
+1) Obavezno popuniti sve podatke gore pod grupom "Osnovne Postavke"<br />
+2) Obavezno popuniti sve podatke dolje tj. pod ovom grupom "Poslovni Prostor"<br />
+3) Kliknuti na "Save Config" dugme gore desno<br />
+4) Biti sugurni kako ste prethodno barem jednom obavili prijavu novootvorenog poslovnog prostora<br />
+5) kliknuti na dugme desno, "Prijavi promjenu radnog vremena"<br /><i>Svaku promjenu radnog vremena potrebno je prijaviti.</i>
+</span></div><div class="button-container"><button type="button" class="button" onclick="PPConfigJS_businessUnitReport();">Prijavi promjenu radnog vremena</button></div></div>
+                        
+<div class="config-heading"><div class="heading"><strong>Prijava zatvaranja tj. prestanka s radom poslovnog prostora</strong><span class="heading-intro">Kako biste prijavili promjenu adrese poslovnog prostor-a slijedite ove korake:<br />
+1) Obavezno popuniti sve podatke gore pod grupom "Osnovne Postavke"<br />
+2) Obavezno popuniti sve podatke dolje tj. pod ovom grupom "Poslovni Prostor"<br />
+3) Kliknuti na "Save Config" dugme gore desno<br />
+4) Biti sugurni kako ste prethodno barem jednom obavili prijavu novootvorenog poslovnog prostora<br />
+5) kliknuti na dugme desno, "Prijavi zatvaranje"<br /><i>Nakon zatvaranja poslovnog prostora ne smiju se više dostavljati računi s oznakom tog poslovnog prostora.</i>
+</span></div><div class="button-container"><button type="button" class="button" onclick="PPConfigJS_businessUnitClose();">Prijavi zatvaranje</button></div></div>                         
+                        ]]>
+                    </comment>
+                    <fields>
+                        <OznPoslProstora translate="label comment">
+                            <label>Oznaka poslovnog prostora</label>
+                            <comment><![CDATA[Varchar(20). Može sadržavati samo znamenke i slova 0-9, a-z, A-Z. Oznaka mora biti ista kao ona koja se navodi na računima. Mora biti jedinstvena na razini OIB-a obveznika.]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>10</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </OznPoslProstora>
+                        <Ulica translate="label comment">
+                            <label>Ulica</label>
+                            <comment><![CDATA[Varchar(100), nije obavezan. Npr.: "Avenija Marina Držića".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </Ulica>
+                        <KucniBroj translate="label comment">
+                            <label><![CDATA[Kućni Broj]]></label>
+                            <comment><![CDATA[Varchar(4), nije obavezan. Npr.: "0014".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>30</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </KucniBroj>
+                        <KucniBrojDodatak translate="label comment">
+                            <label><![CDATA[Kućni Broj Dodatak]]></label>
+                            <comment><![CDATA[Varchar(4), nije obavezan. Npr.: "B".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>40</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </KucniBrojDodatak>
+                        <BrojPoste translate="label comment">
+                            <label><![CDATA[Broj pošte]]></label>
+                            <comment><![CDATA[Varchar(12), nije obavezan. Npr.: "10000".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>50</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </BrojPoste>
+                        <Naselje translate="label comment">
+                            <label>Naselje</label>
+                            <comment><![CDATA[Varchar(35), nije obavezan. Npr.: "Zagreb".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>60</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </Naselje>
+                        <Opcina translate="label comment">
+                            <label><![CDATA[Općina]]></label>
+                            <comment><![CDATA[Varchar(35), nije obavezan. Naziv općine ili grada. Npr.: "Zagreb".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>70</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </Opcina>
+                        <RadnoVrijeme translate="label comment">
+                            <label>Radno Vrijeme</label>
+                            <comment><![CDATA[Varchar(1000), obavezan. Radno vrijeme poslovnog prostora. Predviđen je slobodan unos. Npr.: "Pon-Sub: 08:00-21:00, Ned: 09:00-14:00".]]></comment>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>80</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </RadnoVrijeme>
+                        <DatumPocetkaPrimjene translate="label comment">
+                            <label><![CDATA[Datum početka primjene]]></label>
+                            <comment><![CDATA[Varchar(1000), obavezan. Datum otkad vrijedi promjena. dd.mm.gggg. Predviđen je slobodan unos. Npr.: "01.09.2012".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>90</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </DatumPocetkaPrimjene>
+                    </fields>
+                </PoslovniProstor>   
+                <Racun translate="label">
+                    <label><![CDATA[Račun]]></label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>30</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <USustPdv translate="label comment">
+                            <label>U sustavu PDV-a</label>
+                            <comment><![CDATA[]]></comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </USustPdv>
+                        <PdvPorezStopa>
+                            <label>Porezna stopa PDV-a</label>
+                            <comment><![CDATA[Decimal(3,2), obavezano ako postoji porez. Npr. stopa od 25% se dostavlja kao: "25.00".]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>                            
+                        </PdvPorezStopa>
+                        <NacinPlac>
+                            <label><![CDATA[Mapiranje načina plaćanja]]></label>
+                            <comment><![CDATA[Svako mapiranje, novi redak. G – gotovina K – kartice, C – ček, T – transakcijski račun, O – ostalo. U slučaju više načina plaćanja po jednom računu, isto je potrebno prijaviti pod 'Ostalo'. Za sve načine plaćanja koji nisu prije navedeni koristiti će se oznaka ‘Ostalo’.]]></comment>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>30</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>                                                        
+                        </NacinPlac>
+                        <blagajnik>
+                            <label><![CDATA[Blagajnik]]></label>
+                            <comment><![CDATA[OIB ili naziv blagajnika. Koristi se isključivo za Magento svrhe, ne koristi se kod komunikacije sa CIS-om.]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>40</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </blagajnik>
+                    </fields>
+                </Racun>
+            </groups>
+        </inchoo_fiskalizacija>
+    </sections>
+</config>
