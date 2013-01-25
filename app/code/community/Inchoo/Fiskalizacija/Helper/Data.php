@@ -303,4 +303,23 @@ class Inchoo_Fiskalizacija_Helper_Data extends Mage_Core_Helper_Data
 
         return trim($path);
     }
+
+    /**
+     * Function taken from Magento eCommerce platform from /app/code/core/Mage/Core/Helper/Data.php file.
+     *
+     * @param $len
+     * @param null $chars
+     * @return string
+     */
+    function getRandomString($len, $chars = null)
+    {
+        if (is_null($chars)) {
+            $chars = 'abcdefghijklmnopqrstuvwxyz' . 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' . '0123456789';
+        }
+        mt_srand(10000000*(double)microtime());
+        for ($i = 0, $str = '', $lc = strlen($chars)-1; $i < $len; $i++) {
+            $str .= $chars[mt_rand(0, $lc)];
+        }
+        return $str;
+    }
 }

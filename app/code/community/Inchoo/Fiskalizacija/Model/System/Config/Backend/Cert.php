@@ -76,12 +76,8 @@ class Inchoo_Fiskalizacija_Model_System_Config_Backend_Cert extends Mage_Adminht
             $cert = array();
             $pkcs12Read = openssl_pkcs12_read(file_get_contents($pfx), $cert, $certificatePass);
 
-            $chars = Mage_Core_Helper_Data::CHARS_PASSWORD_LOWERS
-                . Mage_Core_Helper_Data::CHARS_PASSWORD_UPPERS
-                . Mage_Core_Helper_Data::CHARS_PASSWORD_DIGITS;
-
             /* Generate a new passphrase for private key that we will store in database. */
-            $newPrivateKeyPass = Mage::helper('core')->getRandomString(16, $chars);
+            $newPrivateKeyPass = Mage::helper('inchoo_fiskalizacija')->getRandomString(16);
             
             if ($pkcs12Read) {
                 file_put_contents($tmpPublicCert, $cert['cert']);

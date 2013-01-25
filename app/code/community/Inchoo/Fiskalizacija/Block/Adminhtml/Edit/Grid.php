@@ -31,13 +31,13 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         ));
 
         $this->addColumn('created_at', array(
-            'header'    => Mage::helper('customer')->__('Created At'),
+            'header'    => Mage::helper('customer')->__('Kreirano'),
             'index'     => 'created_at',
             'type'      => 'datetime',
         ));
 
         $this->addColumn('parent_entity_type', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('Parent Type'),
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Vrsta računa'),
             'sortable' => true,
             'index' => 'parent_entity_type',
             'type'  => 'options',
@@ -48,7 +48,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         ));
 
         $this->addColumn('parent_entity_id', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('Parent ID'),
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Račun ID'),
             'sortable' => true,
             'index' => 'parent_entity_id',
             'renderer'  => 'inchoo_fiskalizacija/adminhtml_edit_renderer_parentid'
@@ -68,7 +68,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         }
 
         $this->addColumn('posl_prostor', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('Posl.prostor'),
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Poslovni prostor'),
             'sortable' => true,
             'index' => 'posl_prostor',
             'type'  => 'options',
@@ -76,7 +76,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         ));
 
         $this->addColumn('br_rac', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('BrRac'),
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Broj računa'),
             'sortable' => true,
             'index' => 'br_rac',
         ));
@@ -89,13 +89,13 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         ));
 
         $this->addColumn('zast_kod', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('ZastKod'),
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Zaštitni kod'),
             'sortable' => true,
             'index' => 'zast_kod',
         ));
 
         $this->addColumn('customer_notified', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('Cust.notified'),
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Kupac obavješten'),
             'sortable' => true,
             'index' => 'customer_notified',
         ));
