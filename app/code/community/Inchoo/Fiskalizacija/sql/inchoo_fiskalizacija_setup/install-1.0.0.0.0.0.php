@@ -165,10 +165,7 @@ $table = $installer->getConnection()
         ), 'Last service response body')
     ->addColumn('last_service_response_status', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
         'nullable'  => true,
-        ), 'Last service response status')        
-    ->addColumn('modified_at', Varien_Db_Ddl_Table::TYPE_TIMESTAMP, null, array(
-        'nullable'  => false,
-        ), 'Time when entry was last modified')
+        ), 'Last service response status')
     ->addColumn('customer_notified', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
     'nullable'  => true,
     'default' => '0'

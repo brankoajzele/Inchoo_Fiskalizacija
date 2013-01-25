@@ -103,7 +103,6 @@ class Inchoo_Fiskalizacija_Model_Observer
         $fiscalInvoice = Mage::getModel('inchoo_fiskalizacija/invoice');
 
         $fiscalInvoice->setCreatedAt($dt->format('Y-m-d H:i:s'));
-        $fiscalInvoice->setModifiedAt($dt->format('Y-m-d H:i:s'));
         $fiscalInvoice->setStoreId($storeId);
         $fiscalInvoice->setWebsiteId($websiteId);
         $fiscalInvoice->setParentEntityId($entity->getId());
