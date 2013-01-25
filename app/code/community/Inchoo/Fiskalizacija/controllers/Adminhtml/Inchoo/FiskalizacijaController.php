@@ -147,7 +147,7 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                     $jir = $jirNode->nodeValue;
                     $fiscalInvoice->setJir($jir);
                     Mage::getSingleton('adminhtml/session')->addSuccess($helper->__('JIR %s.', $jir));
-                    $dt = new DateTime('now', new DateTimeZone(Mage::app()->getStore($fiscalInvoice->getStoreId())->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_TIMEZONE)));
+                    $dt = new DateTime('now');
                     $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
                 } else {
 

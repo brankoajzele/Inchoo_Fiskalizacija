@@ -36,12 +36,12 @@ $installer = $this;
 
 $installer->startSetup();
 
-/* START Cleanup version 0.9.2.0.0.0, full remove */
+/* START Cleanup, full remove */
 $installer->run("
 DROP TABLE IF EXISTS {$installer->getTable('inchoo_fiskalizacija/cert')};
 DROP TABLE IF EXISTS {$installer->getTable('inchoo_fiskalizacija/invoice')};
 ");
-/* END Cleanup version 0.9.2.0.0.0, full remove */
+/* END Cleanup, full remove */
 
 $table = $installer->getConnection()
     ->newTable($installer->getTable('inchoo_fiskalizacija/cert'))
@@ -230,8 +230,6 @@ $installer->getConnection()
 ));
 /* END Add columns to invoice table */
 
-
-
 /* START Add trigger to inchoo_fiskalizacija_invoice table */
 $invoiceTableName = $installer->getTable('inchoo_fiskalizacija/invoice');
 $invoiceTableTriggerName = 'before_'.$invoiceTableName;
@@ -249,13 +247,10 @@ END";
 /**
  * NOTE: Using $installer->run() does not work!!!
  */
-
 Mage::getSingleton('core/resource')
     ->getConnection('core_write')
     ->query($sql);
 /* END Add trigger to inchoo_fiskalizacija_invoice table */
-
-
 
 /* START Add columns to creditmemo table */
 $installer->getConnection()

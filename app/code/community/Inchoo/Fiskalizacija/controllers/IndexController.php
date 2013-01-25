@@ -39,6 +39,18 @@ class Inchoo_Fiskalizacija_IndexController extends Mage_Core_Controller_Front_Ac
      */
     public function initNewFiscalYearAction()
     {
+//        $dt =  Mage::getModel('core/locale')->storeDate(1, '2013-01-25 13:25:36', true)->toString('DD.MM.YYYY\THH:mm:ss');
+
+
+
+        /* Current datetime */
+
+        echo Mage::getModel('core/locale')->storeDate(1, null, true)->toString('DD.MM.YYYY\THH:mm:ss'); exit;
+
+//        $dt = new Zend_Date();
+        echo $dt->toString('DD.MM.YYYY\THH:mm:ss'); exit;
+
+        echo Mage::helper('core')->formatDate($dt, Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true); exit;
         Mage::helper('inchoo_fiskalizacija')->initNewFiscalYear();
     }
 }

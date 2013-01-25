@@ -92,7 +92,7 @@ class Inchoo_Fiskalizacija_Model_Observer
             return $this;
         }
 
-        $dt = new DateTime('now', new DateTimeZone(Mage::app()->getStore($storeId)->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_TIMEZONE)));
+        $dt = new DateTime('now'); /* $dt->format('Y-m-d H:i:s') */
 
         /*
          * Create initial entry to reserve the entity_id flow
@@ -219,7 +219,7 @@ class Inchoo_Fiskalizacija_Model_Observer
                 $jir = $jirNode->nodeValue;
                 $fiscalInvoice->setJir($jir);
                 Mage::getSingleton('adminhtml/session')->addSuccess($helper->__('JIR %s.', $jir));
-                $dt = new DateTime('now', new DateTimeZone(Mage::app()->getStore($fiscalInvoice->getStoreId())->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_TIMEZONE)));
+                $dt = new DateTime('now'); /* $dt->format('Y-m-d H:i:s') */
                 $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
             } else {
 
@@ -331,6 +331,11 @@ class Inchoo_Fiskalizacija_Model_Observer
                 if ($entity && $entity->getId()) {
                     
                     if ($entity->getInchooFiskalizacijaJir()) {
+
+                        $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                        $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                        $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+
                         $html = '<div>
                             <!--CIS Info-->
                             <div class="entry-edit">
@@ -339,9 +344,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                 </div>
                                 <fieldset>
                                     <div>Broj računa: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>
-                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
-                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
-                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
+                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
+                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
                                     <div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>
                                     <div>Zaštitni kod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>
                                     <div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>
@@ -372,6 +377,10 @@ class Inchoo_Fiskalizacija_Model_Observer
                                     'finvoice_id' => $fiscalInvoice->getId()
                                 );
 
+                                $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                                $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                                $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+
                                 $html = '<div>
                                 <!--CIS Info-->
                                 <div class="entry-edit">
@@ -380,9 +389,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                     </div>
                                     <fieldset>
                                         <div>Broj računa: <strong>'.$fiscalInvoice->getBrRac().'</strong></div>
-                                        <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
-                                        <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
-                                        <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
+                                        <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
+                                        <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
+                                        <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
                                         <div>JIR: <strong>'.$fiscalInvoice->getJir().'</strong></div>
                                         <div>OIB firme: <strong>'.$fiscalInvoice->getOib().'</strong></div>
                                         <div>Blagajnik (oznaka blagajnika OIB/naziv): <strong>'.$fiscalInvoice->getBlagajnik().'</strong></div>
@@ -405,6 +414,10 @@ class Inchoo_Fiskalizacija_Model_Observer
                                     'finvoice_id' => $fiscalInvoice->getId()
                                 );
 
+                                $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                                $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                                $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+
                                 $html = '<div>
                             <!--CIS Info-->
                             <div class="entry-edit">
@@ -413,9 +426,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                 </div>
                                 <fieldset>
                                     <div>Broj računa: <strong>'.$fiscalInvoice->getBrRac().'</strong></div>
-                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
-                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
-                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
+                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
+                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
                                     <div>JIR: <strong>'.$fiscalInvoice->getJir().'</strong></div>
                                     <div>Zaštitni kod: <strong>'.$fiscalInvoice->getZastKod().'</strong></div>
                                     <div>OIB firme: <strong>'.$fiscalInvoice->getOib().'</strong></div>
@@ -430,6 +443,11 @@ class Inchoo_Fiskalizacija_Model_Observer
 
 
                         } else {
+
+                            $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                            $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+                            $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+
                             $html = '<div>
                             <!--CIS Info-->
                             <div class="entry-edit">
@@ -438,9 +456,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                 </div>
                                 <fieldset>
                                     <div>Broj računa: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>
-                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
-                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
-                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
+                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
+                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
                                     <div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>
                                     <div>Zaštitni kod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>
                                     <div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>

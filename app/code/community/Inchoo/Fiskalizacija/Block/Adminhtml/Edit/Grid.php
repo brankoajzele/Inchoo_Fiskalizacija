@@ -1,5 +1,35 @@
 <?php
-
+/**
+ * Inchoo
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Please do not edit or add to this file if you wish to upgrade
+ * Magento or this extension to newer versions in the future.
+ * Inchoo developers (Inchooer's) give their best to conform to
+ * "non-obtrusive, best Magento practices" style of coding.
+ * However, Inchoo does not guarantee functional accuracy of
+ * specific extension behavior. Additionally we take no responsibility
+ * for any possible issue(s) resulting from extension usage.
+ * We reserve the full right not to provide any kind of support for our free extensions.
+ * Thank you for your understanding.
+ *
+ * @category    Inchoo
+ * @package     Inchoo_Fiskalizacija
+ * @author      Branko Ajzele <ajzele@gmail.com>
+ * @copyright   Copyright (c) Inchoo (http://inchoo.net/)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Block_Widget_Grid
 {
 
@@ -101,26 +131,6 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'index' => 'customer_notified',
         ));
 
-//        $this->addColumn('total_request_attempts', array(
-//            'header' => Mage::helper('inchoo_fiskalizacija')->__('Total Request Attempts'),
-//            'sortable' => true,
-//            'index' => 'total_request_attempts',
-//        ));
-
-//        $this->addColumn('jir_obtained_at', array(
-//            'header'    => Mage::helper('customer')->__('JIR Obtained At'),
-//            'index'     => 'jir_obtained_at',
-//            'type'      => 'datetime',
-//        ));
-
-//        $this->addColumn('blagajnik', array(
-//            'header' => Mage::helper('inchoo_fiskalizacija')->__('Cashier'),
-//            'sortable' => true,
-//            'index' => 'blagajnik',
-//        ));
-
-
-
         return parent::_prepareColumns();
     }
 
@@ -129,23 +139,11 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         $this->setMassactionIdField('entity_id');
         $this->getMassactionBlock()->setFormFieldName('inchoo_fiskalizacija');
 
-//        $this->getMassactionBlock()->addItem('jir_from_cis', array(
-//            'label'=> Mage::helper('inchoo_fiskalizacija')->__('Get JIR from CIS'),
-//            'url'  => $this->getUrl('*/*/massResend'),
-//            'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
-//        ));
-
         $this->getMassactionBlock()->addItem('email', array(
             'label'=> Mage::helper('inchoo_fiskalizacija')->__('Email Customer'),
             'url'  => $this->getUrl('*/*/massEmail'),
             'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
         ));
-
-//        $this->getMassactionBlock()->addItem('email_pdf', array(
-//            'label'=> Mage::helper('inchoo_fiskalizacija')->__('PDF Email Customer'),
-//            'url'  => $this->getUrl('*/*/massEmailPdf'),
-//            'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
-//        ));
 
         Mage::dispatchEvent('inchoo_fiskalizacija_grid_prepare_massaction', array('block' => $this));
         return $this;
