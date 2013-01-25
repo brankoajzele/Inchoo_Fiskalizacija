@@ -11,7 +11,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Sales_Order_Finvoice_Edit extends Mag
         parent::__construct();
         
 
-        $this->_updateButton('save', 'label', Mage::helper('cms')->__('Sign & Re-Send'));
+        $this->_updateButton('save', 'label', Mage::helper('cms')->__('Potpiši i ponovno pošalji'));
         $this->_updateButton('back', 'onclick', 'setLocation(\'' . $this->getUrl('*/sales_order_invoice/view', array('invoice_id' => $this->getRequest()->getParam('invoice_id', 0), 'order_id' => $this->getRequest()->getParam('order_id', 0))) . '\');');
         
         $this->_removeButton('reset');
@@ -25,10 +25,10 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Sales_Order_Finvoice_Edit extends Mag
             $invoice = Mage::getModel('sales/order_invoice')
                             ->load($finvoice->getInvoiceEntityId());
             
-            return Mage::helper('cms')->__("Edit RacunZahtjev for Invoice #%s, Fiscal Invoice #%s", $invoice->getIncrementId(), $finvoice->getId());
+            return Mage::helper('cms')->__("Uredi RacunZahtjev za Invoice #%s, fiskalni račun #%s", $invoice->getIncrementId(), $finvoice->getId());
         }
         else {
-            return Mage::helper('cms')->__('Error...');
+            return Mage::helper('cms')->__('Pogreška...');
         }
     }
 

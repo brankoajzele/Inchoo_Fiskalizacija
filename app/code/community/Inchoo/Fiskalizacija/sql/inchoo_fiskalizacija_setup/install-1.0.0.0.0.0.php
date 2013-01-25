@@ -112,7 +112,7 @@ $table = $installer->getConnection()
         'nullable'  => false,
         'primary'   => true,
         ), 'Id')
-    ->addColumn('created_at', Varien_Db_Ddl_Table::TYPE_TIMESTAMP, null, array(
+    ->addColumn('created_at', Varien_Db_Ddl_Table::TYPE_DATETIME, null, array(
         'nullable'  => false,
         ), 'Created At')     
     ->addColumn('parent_entity_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
@@ -121,6 +121,12 @@ $table = $installer->getConnection()
     ->addColumn('parent_entity_type', Varien_Db_Ddl_Table::TYPE_VARCHAR, 32, array(
     'nullable'  => true,
     ), 'String like invoice or creditmemo')
+    ->addColumn('store_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+    'nullable'  => false,
+    ), 'Store Id')
+    ->addColumn('website_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+    'nullable'  => false,
+    ), 'Website Id')
     ->addColumn('br_ozn_rac', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
     'nullable'  => false,
     ), 'BrOznRac')

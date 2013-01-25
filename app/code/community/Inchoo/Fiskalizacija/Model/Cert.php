@@ -76,8 +76,13 @@ class Inchoo_Fiskalizacija_Model_Cert extends Mage_Core_Model_Abstract
         $endDatedt = strtotime($this->getValidTo());
         $usrDatedt = strtotime(date('d.m.Y'));
 
+        if (!$this->getId()) {
+            $errors[] = Mage::helper('inchoo_fiskalizacija')->__('Certifikat nije pronađen.');
+            return $errors;
+        }
+
         if(!($usrDatedt >= $startDatedt && $usrDatedt <= $endDatedt)) {
-            $errors[] = Mage::helper('inchoo_fiskalizacija')->__('Certificate is out of valid date range.');
+            $errors[] = Mage::helper('inchoo_fiskalizacija')->__('Period valjanosti certifikata je istekao.');
         }
         
         if (empty($errors)) {

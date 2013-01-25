@@ -72,6 +72,11 @@ class Inchoo_Fiskalizacija_Model_Observer
         $helper = Mage::helper('inchoo_fiskalizacija');
         $storeId = $entity->getStoreId();
 
+        $websiteId = Mage::getModel('core/store')
+            ->load($storeId)
+            ->getWebsiteId();
+
+
         if ($helper->isModuleEnabled($storeId) == false) {
             return;
         }
@@ -87,6 +92,8 @@ class Inchoo_Fiskalizacija_Model_Observer
             return $this;
         }
 
+        $dt = new DateTime('now', new DateTimeZone(Mage::app()->getStore($storeId)->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_TIMEZONE)));
+
         /*
          * Create initial entry to reserve the entity_id flow
          * for RacunZahtjev.Racun.BrRac.BrOznRac.
@@ -95,6 +102,10 @@ class Inchoo_Fiskalizacija_Model_Observer
          */
         $fiscalInvoice = Mage::getModel('inchoo_fiskalizacija/invoice');
 
+        $fiscalInvoice->setCreatedAt($dt->format('Y-m-d H:i:s'));
+        $fiscalInvoice->setModifiedAt($dt->format('Y-m-d H:i:s'));
+        $fiscalInvoice->setStoreId($storeId);
+        $fiscalInvoice->setWebsiteId($websiteId);
         $fiscalInvoice->setParentEntityId($entity->getId());
         $fiscalInvoice->setParentEntityType($entityType);
         $fiscalInvoice->setPoslProstor($helper->getPoslovniProstorOznPoslProstora($storeId));
@@ -209,7 +220,8 @@ class Inchoo_Fiskalizacija_Model_Observer
                 $jir = $jirNode->nodeValue;
                 $fiscalInvoice->setJir($jir);
                 Mage::getSingleton('adminhtml/session')->addSuccess($helper->__('JIR %s.', $jir));
-                $fiscalInvoice->setJirObtainedAt(time());
+                $dt = new DateTime('now', new DateTimeZone(Mage::app()->getStore($fiscalInvoice->getStoreId())->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_TIMEZONE)));
+                $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
             } else {
 
                 Mage::log($response->getRawBody(), null, $errorLogFile, true);
@@ -231,7 +243,6 @@ class Inchoo_Fiskalizacija_Model_Observer
                 $PorukaGreske = $PorukaGreskeNode->nodeValue;
                 Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $PorukaGreske));
             } else {
-                $PorukaGreske = $PorukaGreskeNode->nodeValue;
                 Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: -- N/A --.', $response->getStatus()));
             }
 
@@ -302,6 +313,13 @@ class Inchoo_Fiskalizacija_Model_Observer
                     $entity = $creditmemo;
                 }
 
+                $storeId = $entity->getStoreId();
+                $helper = Mage::helper('inchoo_fiskalizacija');
+
+                if ($helper->isModuleEnabled($storeId) == false) {
+                    return;
+                }
+
 
                 $fiscalInvoice = Mage::getModel('inchoo_fiskalizacija/invoice')
                     ->getCollection()
@@ -322,7 +340,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                 </div>
                                 <fieldset>
                                     <div>Broj računa: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>
-                                    <div>Vrijeme izdavanja računa: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
                                     <div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>
                                     <div>Zaštitni kod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>
                                     <div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>
@@ -361,7 +381,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                     </div>
                                     <fieldset>
                                         <div>Broj računa: <strong>'.$fiscalInvoice->getBrRac().'</strong></div>
-                                        <div>Vrijeme izdavanja računa: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                        <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                        <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
+                                        <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
                                         <div>JIR: <strong>'.$fiscalInvoice->getJir().'</strong></div>
                                         <div>OIB firme: <strong>'.$fiscalInvoice->getOib().'</strong></div>
                                         <div>Blagajnik (oznaka blagajnika OIB/naziv): <strong>'.$fiscalInvoice->getBlagajnik().'</strong></div>
@@ -392,7 +414,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                 </div>
                                 <fieldset>
                                     <div>Broj računa: <strong>'.$fiscalInvoice->getBrRac().'</strong></div>
-                                    <div>Vrijeme izdavanja računa: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
                                     <div>JIR: <strong>'.$fiscalInvoice->getJir().'</strong></div>
                                     <div>Zaštitni kod: <strong>'.$fiscalInvoice->getZastKod().'</strong></div>
                                     <div>OIB firme: <strong>'.$fiscalInvoice->getOib().'</strong></div>
@@ -415,7 +439,9 @@ class Inchoo_Fiskalizacija_Model_Observer
                                 </div>
                                 <fieldset>
                                     <div>Broj računa: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>
-                                    <div>Vrijeme izdavanja računa: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$entity->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$fiscalInvoice->getCreatedAt().'</strong></div>
+                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$fiscalInvoice->getJirObtainedAt().'</strong></div>
                                     <div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>
                                     <div>Zaštitni kod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>
                                     <div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>
@@ -468,5 +494,35 @@ class Inchoo_Fiskalizacija_Model_Observer
     public function initNewFiscalYear()
     {
         Mage::helper('inchoo_fiskalizacija')->initNewFiscalYear();
+    }
+
+    public function validateCertificate($observer = null)
+    {
+        $invoice = $observer->getEvent()->getInvoice();
+        $creditmemo = $observer->getEvent()->getCreditmemo();
+
+        if ($invoice) { $entity = $invoice; }
+        elseif ($creditmemo) { $entity = $creditmemo; }
+        else { return; }
+
+        $helper = Mage::helper('inchoo_fiskalizacija');
+        $storeId = $entity->getStoreId();
+
+        if ($helper->isModuleEnabled($storeId) == false) {
+            return;
+        }
+
+        $websiteId = Mage::getModel('core/store')
+                        ->load($storeId)
+                        ->getWebsiteId();
+
+        $certificate = Mage::getModel('inchoo_fiskalizacija/cert')
+                            ->load($websiteId, 'website_id');
+
+        $validation = $certificate->validate();
+
+        if ((!$certificate) || ($validation !== true)) {
+            throw new Mage_Core_Exception(implode(' ', $validation));
+        }
     }
 }

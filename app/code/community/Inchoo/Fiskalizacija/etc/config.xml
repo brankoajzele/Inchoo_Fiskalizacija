@@ -83,18 +83,26 @@
             <inchoo_fiskalizacija>
                 <class>Inchoo_Fiskalizacija_Block</class>
             </inchoo_fiskalizacija>
-                        
-            <adminhtml>
-                <rewrite>
-<!--                    Gives Error 324 (net::ERR_EMPTY_RESPONSE)-->
-<!--                    <sales_order_invoice_view_form>Inchoo_Fiskalizacija_Block_Adminhtml_Sales_Order_Invoice_View_Form</sales_order_invoice_view_form>-->
-<!--                    <sales_order_view_info>Inchoo_Fiskalizacija_Block_Adminhtml_Sales_Order_View_Info</sales_order_view_info>-->
-                </rewrite>
-            </adminhtml>            
         </blocks>
     </global>
     <adminhtml>
         <events>
+            <sales_order_invoice_save_before>
+                <observers>
+                    <inchoo_fiskalizacija_validateCertificate>
+                        <class>inchoo_fiskalizacija/observer</class>
+                        <method>validateCertificate</method>
+                    </inchoo_fiskalizacija_validateCertificate>
+                </observers>
+            </sales_order_invoice_save_before>
+            <sales_order_creditmemo_save_before>
+                <observers>
+                    <inchoo_fiskalizacija_validateCertificate>
+                        <class>inchoo_fiskalizacija/observer</class>
+                        <method>validateCertificate</method>
+                    </inchoo_fiskalizacija_validateCertificate>
+                </observers>
+            </sales_order_creditmemo_save_before>
             <sales_order_invoice_save_after>
                 <observers>
                     <inchoo_fiskalizacija_pushRacunZahtjevToFiscalizationService>

@@ -31,9 +31,10 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         ));
 
         $this->addColumn('created_at', array(
-            'header'    => Mage::helper('customer')->__('Kreirano'),
+            'header'    => Mage::helper('customer')->__('Vrijeme kreiranja'),
             'index'     => 'created_at',
             'type'      => 'datetime',
+            'renderer'  => 'inchoo_fiskalizacija/adminhtml_edit_renderer_createdat'
         ));
 
         $this->addColumn('parent_entity_type', array(
@@ -42,8 +43,8 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'index' => 'parent_entity_type',
             'type'  => 'options',
             'options' => array(
-                'invoice' => Mage::helper('inchoo_fiskalizacija')->__('Invoice'),
-                'creditmemo' => Mage::helper('inchoo_fiskalizacija')->__('Credit Memo')
+                'invoice' => Mage::helper('inchoo_fiskalizacija')->__('Invoice (redovan)'),
+                'creditmemo' => Mage::helper('inchoo_fiskalizacija')->__('Credit Memo (storni)')
             ),
         ));
 

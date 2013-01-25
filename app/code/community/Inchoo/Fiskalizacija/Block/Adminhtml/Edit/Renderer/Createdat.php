@@ -30,15 +30,15 @@
  * @copyright   Copyright (c) Inchoo (http://inchoo.net/)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class Inchoo_Fiskalizacija_IndexController extends Mage_Core_Controller_Front_Action
+class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Renderer_Createdat extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
 {
-    /**
-     * Run this with system CRON once per day right at midnight or minute after midnight
-     *
-     * url like: http://magento1702.ce/index.php/fiskalizacija/index/initNewFiscalYear
-     */
-    public function initNewFiscalYearAction()
+    protected $_values;
+
+    public function render(Varien_Object $row)
     {
-        Mage::helper('inchoo_fiskalizacija')->initNewFiscalYear();
+        /** @var $row Inchoo_Fiskalizacija_Model_Invoice */
+
+        $dt = new DateTime($row->getCreatedAt());
+        return $dt->format('d.m.Y H:i:s');
     }
 }

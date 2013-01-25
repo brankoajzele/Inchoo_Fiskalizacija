@@ -10,7 +10,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Sales_Order_Finvoice_Edit_Form extend
     {
         parent::__construct();
         $this->setId('block_form');
-        $this->setTitle(Mage::helper('cms')->__('Block Information'));
+        $this->setTitle(Mage::helper('cms')->__('Informacije'));
     }
 
     /**
@@ -64,8 +64,8 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Sales_Order_Finvoice_Edit_Form extend
         
         $fieldset->addField('xml_request_raw_body', 'textarea', array(
             'name'      => 'xml_request_raw_body',
-            'label'     => Mage::helper('cms')->__('Raw XML request'),
-            'title'     => Mage::helper('cms')->__('Raw XML request'),
+            'label'     => Mage::helper('cms')->__('XML zahtjev'),
+            'title'     => Mage::helper('cms')->__('XML zahtjev'),
             'style'     => 'height:36em',
             'required'  => true,
         ));

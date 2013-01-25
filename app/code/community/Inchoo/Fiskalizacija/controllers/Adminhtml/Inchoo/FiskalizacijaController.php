@@ -147,7 +147,9 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                     $jir = $jirNode->nodeValue;
                     $fiscalInvoice->setJir($jir);
                     Mage::getSingleton('adminhtml/session')->addSuccess($helper->__('JIR %s.', $jir));
-                    $fiscalInvoice->setJirObtainedAt(time());
+                    $dt = new DateTime('now', new DateTimeZone(Mage::app()->getStore($fiscalInvoice->getStoreId())->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_TIMEZONE)));
+                    $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
+                    $fiscalInvoice->setModifiedAt($dt->format('Y-m-d H:i:s'));
                 } else {
 
                     Mage::log($response->getRawBody(), null, $errorLogFile, true);
@@ -268,9 +270,9 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
             $PorukaGreskeNode = $DOMDocument->getElementsByTagName('PorukaGreske')->item(0);
                 if ($PorukaGreskeNode) {
                     $PorukaGreske = $PorukaGreskeNode->nodeValue;
-                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS response status: %s. Response message: %s.', $response->getStatus(), $PorukaGreske));
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server status odgovora: %s. Poruka odgovora: %s.', $response->getStatus(), $PorukaGreske));
                 } else {
-                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS response status: %s. Response message: -- unknown --.', $response->getStatus()));
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server status odgovora: %s. Poruka odgovora: -- nepoznato --.', $response->getStatus()));
                 }            
             Mage::log($response->getRawBody(), null, $errorLogFile, true);
         }        
@@ -325,7 +327,7 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                                     ->load($entity->getParentEntityId());
 
                     /* ->sendEmail($notifyCustomer = true, $comment = ''); */
-                    $comment = $helper->__('Naknadno poslan storniran račun.');
+                    $comment = $helper->__('Naknadno poslan stornirani račun.');
                     try {
                         $creditmemo->sendEmail(true, $comment);
                         $entity->setCustomerNotified($entity->getCustomerNotified() + 1);
