@@ -257,8 +257,8 @@
                             <show_in_store>0</show_in_store>
                         </USustPdv>
                         <PdvPorezStopa>
-                            <label>Porezna stopa PDV-a</label>
-                            <comment><![CDATA[Decimal(3,2), obavezano ako postoji porez. Npr. stopa od 25% se dostavlja kao: "25.00".]]></comment>
+                            <label>PDV na dostavu</label>
+                            <comment><![CDATA[Decimal(3,2), obavezano ako postoji porez. Npr. stopa od 25% se dostavlja kao: "25.00". Napomena, ovo nije porezna stopa proizvoda već samo dostave. Za proizvode se koristi product item tax class group.]]></comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>20</sort_order>
                             <show_in_default>0</show_in_default>

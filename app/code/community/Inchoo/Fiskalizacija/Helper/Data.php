@@ -256,10 +256,10 @@ class Inchoo_Fiskalizacija_Helper_Data extends Mage_Core_Helper_Data
         }
 
         try {
-            $conn->query("CREATE TABLE {$liveTable}_{$yearInTable} LIKE {$liveTable};");
-            $conn->query("INSERT INTO {$liveTable}_{$yearInTable} SELECT * FROM {$liveTable};");
+            $conn->query("CREATE TABLE {$liveTable}_archive_{$yearInTable} LIKE {$liveTable};");
+            $conn->query("INSERT INTO {$liveTable}_archive_{$yearInTable} SELECT * FROM {$liveTable};");
             $totalInLive = (int)$conn->fetchOne("SELECT COUNT(entity_id) FROM {$liveTable};");
-            $totalInArchive = (int)$conn->fetchOne("SELECT COUNT(entity_id) FROM {$liveTable}_{$yearInTable};");
+            $totalInArchive = (int)$conn->fetchOne("SELECT COUNT(entity_id) FROM {$liveTable}_archive_{$yearInTable};");
         } catch (Exception $e) {
             $error = $e->getMessage();
         }

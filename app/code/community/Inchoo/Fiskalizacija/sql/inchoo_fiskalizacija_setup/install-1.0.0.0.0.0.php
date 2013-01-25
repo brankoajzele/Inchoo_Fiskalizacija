@@ -114,6 +114,12 @@ $table = $installer->getConnection()
     ->addColumn('parent_entity_type', Varien_Db_Ddl_Table::TYPE_VARCHAR, 32, array(
     'nullable'  => true,
     ), 'String like invoice or creditmemo')
+    ->addColumn('br_ozn_rac', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+    'nullable'  => false,
+    ), 'BrOznRac')
+    ->addColumn('posl_prostor', Varien_Db_Ddl_Table::TYPE_VARCHAR, 32, array(
+    'nullable'  => false,
+    ), 'OznPoslProstora')
     ->addColumn('xml_request_raw_body', Varien_Db_Ddl_Table::TYPE_TEXT, null, array(
         'nullable'  => false,
         ), 'Final XML request, non-signed ready to be signed')
@@ -150,6 +156,10 @@ $table = $installer->getConnection()
     ->addColumn('modified_at', Varien_Db_Ddl_Table::TYPE_TIMESTAMP, null, array(
         'nullable'  => false,
         ), 'Time when entry was last modified')
+    ->addColumn('customer_notified', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+    'nullable'  => true,
+    'default' => '0'
+    ), 'Number of time customer has been notified via email')
     ->addIndex(
         $installer->getIdxName(
             'inchoo_fiskalizacija/invoice',
@@ -157,15 +167,15 @@ $table = $installer->getConnection()
             Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE
         ),
         array('parent_entity_type', 'parent_entity_id'), array('type' => Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE))
-    ->setComment('Fiscalization Invoice');
-//    ->addIndex(
-//    $installer->getIdxName(
-//            'inchoo_fiskalizacija/invoice',
-//            array('creditmemo_entity_id'),
-//            Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE
-//        ),
-//        array('creditmemo_entity_id'), array('type' => Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE))
-//    ->setComment('Fiscalization Invoice');
+    ->setComment('Fiscalization Invoice')
+    ->addIndex(
+        $installer->getIdxName(
+            'inchoo_fiskalizacija/invoice',
+            array('br_ozn_rac'),
+            Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE
+        ),
+        array('posl_prostor', 'br_ozn_rac'), array('type' => Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE))
+    ->setComment('Br.racuna po poslovnom prostoru');
 $installer->getConnection()->createTable($table);
 
 /* START Add columns to invoice table */
@@ -209,6 +219,33 @@ $installer->getConnection()
     'comment'   => 'Blagajnik'
 ));
 /* END Add columns to invoice table */
+
+
+
+/* START Add trigger to inchoo_fiskalizacija_invoice table */
+$invoiceTableName = $installer->getTable('inchoo_fiskalizacija/invoice');
+$invoiceTableTriggerName = 'before_'.$invoiceTableName;
+
+$sql = "CREATE
+TRIGGER {$invoiceTableTriggerName}
+BEFORE INSERT ON {$invoiceTableName}
+FOR EACH ROW
+BEGIN
+	SET NEW.br_ozn_rac = (SELECT IFNULL(MAX(x.br_ozn_rac), 0) + 1
+						   FROM {$invoiceTableName} x
+						   WHERE x.posl_prostor = NEW.posl_prostor);
+END";
+
+/**
+ * NOTE: Using $installer->run() does not work!!!
+ */
+
+Mage::getSingleton('core/resource')
+    ->getConnection('core_write')
+    ->query($sql);
+/* END Add trigger to inchoo_fiskalizacija_invoice table */
+
+
 
 /* START Add columns to creditmemo table */
 $installer->getConnection()

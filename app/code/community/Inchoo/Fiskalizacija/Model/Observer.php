@@ -97,11 +97,19 @@ class Inchoo_Fiskalizacija_Model_Observer
 
         $fiscalInvoice->setParentEntityId($entity->getId());
         $fiscalInvoice->setParentEntityType($entityType);
+        $fiscalInvoice->setPoslProstor($helper->getPoslovniProstorOznPoslProstora($storeId));
         $fiscalInvoice->setXmlRequestRawBody('');
         $fiscalInvoice->setSignedXmlRequestRawBody('');
         $fiscalInvoice->setTotalRequestAttempts(0);
         $fiscalInvoice->setOib($helper->getOib($storeId));
         $fiscalInvoice->setBlagajnik($helper->getRacunBlagajnik($storeId));
+
+        $creditmemo = Mage::app()->getRequest()->getParam('creditmemo', array());
+        $invoice = Mage::app()->getRequest()->getParam('invoice', array());
+
+        if (!empty($creditmemo['send_email']) || !empty($invoice['send_email'])) {
+            $fiscalInvoice->setCustomerNotified($fiscalInvoice->getCustomerNotified() + 1);
+        }
 
         try {
             $fiscalInvoice->save();
@@ -262,23 +270,25 @@ class Inchoo_Fiskalizacija_Model_Observer
      * @param null $observer
      */
     public function injectFiscalBlock($observer = null)
-    {         
+    {
+//        var_dump($observer->getEvent()->getBlock()->getNameInLayout());
+
         if ($observer->getEvent()->getBlock()->getNameInLayout() === 'order_info') {
             
             $currentUrl = Mage::helper('core/url')->getCurrentUrl();
-            $patternInvoice = 'sales_order_invoice/view/invoice_id';
+            $patternOrderInvoice = 'sales_order_invoice/view/invoice_id';
+            $patternInvoice = 'sales_invoice/view/invoice_id';
+            $patternOrderCreditmemo = 'sales_order_creditmemo/view/creditmemo_id';
             $patternCreditmemo = 'sales_creditmemo/view/creditmemo_id';
+
      
-            if (strstr($currentUrl, $patternInvoice) || strstr($currentUrl, $patternCreditmemo)) {
-
-
+            if (strstr($currentUrl, $patternInvoice) || strstr($currentUrl, $patternOrderInvoice) || strstr($currentUrl, $patternCreditmemo) || strstr($currentUrl, $patternOrderCreditmemo)) {
 
                 if (strstr($currentUrl, $patternInvoice)) {
                     $entityType = self::FISCAL_EVENT_TYPE_INVOICE;
                 } else {
                     $entityType = self::FISCAL_EVENT_TYPE_CREDITMEMO;
                 }
-
 
                 $fiscal = Mage::app()->getLayout()
                                 ->createBlock('Mage_Core_Block_Text', 'fiscal');
@@ -425,7 +435,7 @@ class Inchoo_Fiskalizacija_Model_Observer
                     $observer->getEvent()->getTransport()->getHtml().$fiscal->toHtml()
                 );                 
             }
-        }        
+        }
     }
 
     /**

@@ -289,5 +289,55 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
     public function businessUnitReportAction()
     {
         $this->_forward('businessUnit');
-    }       
+    }
+
+    public function massEmailAction()
+    {
+        $helper = Mage::helper('inchoo_fiskalizacija');
+
+        if (($entities = $this->getRequest()->getParam('inchoo_fiskalizacija'))) {
+
+            foreach ($entities as $entityId) {
+                $entity = Mage::getModel('inchoo_fiskalizacija/invoice')
+                                ->load($entityId);
+
+                if (!$entity->getId()) {
+                    continue;
+                }
+
+                if ($entity->getParentEntityType() == Inchoo_Fiskalizacija_Model_Observer::FISCAL_EVENT_TYPE_INVOICE) {
+                    $invoice = Mage::getModel('sales/order_invoice')
+                                    ->load($entity->getParentEntityId());
+
+                    /* ->sendEmail($notifyCustomer = true, $comment = ''); */
+                    $comment = $helper->__('Naknadno poslan račun.');
+                    try {
+                        $invoice->sendEmail(true, $comment);
+                        $entity->setCustomerNotified($entity->getCustomerNotified() + 1);
+                        $entity->save();
+                    } catch (Exception $e) {
+                        Mage::logException($e);
+                    }
+                }
+
+                if ($entity->getParentEntityType() == Inchoo_Fiskalizacija_Model_Observer::FISCAL_EVENT_TYPE_CREDITMEMO) {
+                    $creditmemo = Mage::getModel('sales/order_creditmemo')
+                                    ->load($entity->getParentEntityId());
+
+                    /* ->sendEmail($notifyCustomer = true, $comment = ''); */
+                    $comment = $helper->__('Naknadno poslan storniran račun.');
+                    try {
+                        $creditmemo->sendEmail(true, $comment);
+                        $entity->setCustomerNotified($entity->getCustomerNotified() + 1);
+                        $entity->save();
+                    } catch (Exception $e) {
+                        Mage::logException($e);
+                    }
+                }
+            }
+
+        }
+
+        $this->_redirectReferer();
+    }
 }

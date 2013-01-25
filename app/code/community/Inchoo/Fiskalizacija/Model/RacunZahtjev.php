@@ -76,7 +76,7 @@ class Inchoo_Fiskalizacija_Model_RacunZahtjev
         $writer->writeElementNs($ns, 'DatVrijeme', null, date('d.m.Y\Th:i:s', strtotime($entity->getCreatedAt())));
         $writer->writeElementNs($ns, 'OznSlijed', null, 'P'); /* P ili N => P na nivou Poslovnog prostora, N na nivou naplatnog uredaja */
         $writer->startElementNs($ns, 'BrRac', null);
-        $writer->writeElementNs($ns, 'BrOznRac', null, $fiscalInvoice->getId());
+        $writer->writeElementNs($ns, 'BrOznRac', null, $fiscalInvoice->getBrOznRac()); /* $fiscalInvoice->getBrOznRac => set automatically via database trigger function */
         $writer->writeElementNs($ns, 'OznPosPr', null, $this->_helper->getPoslovniProstorOznPoslProstora($store));
         $writer->writeElementNs($ns, 'OznNapUr', null, $this->_helper->getOznNapUr($store));
         $writer->endElement(); /* #BrRac */
@@ -133,8 +133,6 @@ class Inchoo_Fiskalizacija_Model_RacunZahtjev
         } else {
             $writer->writeElementNs($ns, 'ZastKod', null, $this->_helper->getZastKod($fiscalInvoice, $store, $entity));
         }
-
-        Mage::log($fiscalInvoice->getTotalRequestAttempts(), null, 'getTotalRequestAttempts.txt', true);
 
         if ((int)$fiscalInvoice->getTotalRequestAttempts() > 1) {
             $writer->writeElementNs($ns, 'NakDost', null, '1');

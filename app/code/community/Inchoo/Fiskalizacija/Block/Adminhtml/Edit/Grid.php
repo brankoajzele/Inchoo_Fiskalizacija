@@ -51,9 +51,29 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'header' => Mage::helper('inchoo_fiskalizacija')->__('Parent ID'),
             'sortable' => true,
             'index' => 'parent_entity_id',
+            'renderer'  => 'inchoo_fiskalizacija/adminhtml_edit_renderer_parentid'
         ));
 
+        $resource = Mage::getSingleton('core/resource');
+        $conn = $resource->getConnection('core_write');
+        $tableName = $resource->getTableName('inchoo_fiskalizacija/invoice');
 
+        $poslProstori = $conn->fetchCol("SELECT DISTINCT posl_prostor FROM {$tableName}");
+
+
+        $_poslProstori = array();
+
+        foreach ($poslProstori as $poslProstor) {
+            $_poslProstori[$poslProstor] = $poslProstor;
+        }
+
+        $this->addColumn('posl_prostor', array(
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Posl.prostor'),
+            'sortable' => true,
+            'index' => 'posl_prostor',
+            'type'  => 'options',
+            'options' => $_poslProstori
+        ));
 
         $this->addColumn('br_rac', array(
             'header' => Mage::helper('inchoo_fiskalizacija')->__('BrRac'),
@@ -65,6 +85,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'header' => Mage::helper('inchoo_fiskalizacija')->__('JIR'),
             'sortable' => true,
             'index' => 'jir',
+            'width' => '250px',
         ));
 
         $this->addColumn('zast_kod', array(
@@ -73,23 +94,29 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'index' => 'zast_kod',
         ));
 
-        $this->addColumn('total_request_attempts', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('Total Request Attempts'),
+        $this->addColumn('customer_notified', array(
+            'header' => Mage::helper('inchoo_fiskalizacija')->__('Cust.notified'),
             'sortable' => true,
-            'index' => 'total_request_attempts',
+            'index' => 'customer_notified',
         ));
 
-        $this->addColumn('jir_obtained_at', array(
-            'header'    => Mage::helper('customer')->__('JIR Obtained At'),
-            'index'     => 'jir_obtained_at',
-            'type'      => 'datetime',
-        ));
+//        $this->addColumn('total_request_attempts', array(
+//            'header' => Mage::helper('inchoo_fiskalizacija')->__('Total Request Attempts'),
+//            'sortable' => true,
+//            'index' => 'total_request_attempts',
+//        ));
 
-        $this->addColumn('blagajnik', array(
-            'header' => Mage::helper('inchoo_fiskalizacija')->__('Cashier'),
-            'sortable' => true,
-            'index' => 'blagajnik',
-        ));
+//        $this->addColumn('jir_obtained_at', array(
+//            'header'    => Mage::helper('customer')->__('JIR Obtained At'),
+//            'index'     => 'jir_obtained_at',
+//            'type'      => 'datetime',
+//        ));
+
+//        $this->addColumn('blagajnik', array(
+//            'header' => Mage::helper('inchoo_fiskalizacija')->__('Cashier'),
+//            'sortable' => true,
+//            'index' => 'blagajnik',
+//        ));
 
 
 
@@ -101,11 +128,11 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
         $this->setMassactionIdField('entity_id');
         $this->getMassactionBlock()->setFormFieldName('inchoo_fiskalizacija');
 
-        $this->getMassactionBlock()->addItem('jir_from_cis', array(
-            'label'=> Mage::helper('inchoo_fiskalizacija')->__('Get JIR from CIS'),
-            'url'  => $this->getUrl('*/*/massResend'),
-            'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
-        ));
+//        $this->getMassactionBlock()->addItem('jir_from_cis', array(
+//            'label'=> Mage::helper('inchoo_fiskalizacija')->__('Get JIR from CIS'),
+//            'url'  => $this->getUrl('*/*/massResend'),
+//            'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
+//        ));
 
         $this->getMassactionBlock()->addItem('email', array(
             'label'=> Mage::helper('inchoo_fiskalizacija')->__('Email Customer'),
@@ -113,11 +140,11 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
         ));
 
-        $this->getMassactionBlock()->addItem('email_pdf', array(
-            'label'=> Mage::helper('inchoo_fiskalizacija')->__('PDF Email Customer'),
-            'url'  => $this->getUrl('*/*/massEmailPdf'),
-            'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
-        ));
+//        $this->getMassactionBlock()->addItem('email_pdf', array(
+//            'label'=> Mage::helper('inchoo_fiskalizacija')->__('PDF Email Customer'),
+//            'url'  => $this->getUrl('*/*/massEmailPdf'),
+//            'confirm' => Mage::helper('inchoo_fiskalizacija')->__('Are you sure?')
+//        ));
 
         Mage::dispatchEvent('inchoo_fiskalizacija_grid_prepare_massaction', array('block' => $this));
         return $this;
