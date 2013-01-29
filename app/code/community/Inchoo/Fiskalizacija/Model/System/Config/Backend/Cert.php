@@ -34,6 +34,7 @@ class Inchoo_Fiskalizacija_Model_System_Config_Backend_Cert extends Mage_Adminht
 {   
     protected function _beforeSave()
     {
+        $helper = Mage::helper('inchoo_fiskalizacija');
         $value = $this->getValue();
         
         if ($_FILES['groups']['tmp_name'][$this->getGroupId()]['fields'][$this->getField()]['value']) {
@@ -104,6 +105,7 @@ class Inchoo_Fiskalizacija_Model_System_Config_Backend_Cert extends Mage_Adminht
                     $existingCert->delete();
                 } catch (Exception $e) {
                     Mage::logException($e);
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__($e->getMessage()));
                 }                        
             }                    
 
@@ -136,6 +138,7 @@ class Inchoo_Fiskalizacija_Model_System_Config_Backend_Cert extends Mage_Adminht
                 @unlink($tmpPrivateKey);
             } catch (Exception $e) {
                 Mage::logException($e);
+                Mage::getSingleton('adminhtml/session')->addWarning($helper->__($e->getMessage()));
             }         
             
             /* Remove temporarily uploaded PFX file and other generated files. */
@@ -154,6 +157,7 @@ class Inchoo_Fiskalizacija_Model_System_Config_Backend_Cert extends Mage_Adminht
                             $existingCert->delete();
                         } catch (Exception $e) {
                             Mage::logException($e);
+                            Mage::getSingleton('adminhtml/session')->addWarning($helper->__($e->getMessage()));
                         }                        
                     }
                 }

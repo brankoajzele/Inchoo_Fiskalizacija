@@ -32,7 +32,6 @@
  */
 class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Block_Widget_Grid
 {
-
     public function __construct()
     {
         parent::__construct();
@@ -117,6 +116,7 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'sortable' => true,
             'index' => 'jir',
             'width' => '250px',
+            'renderer'  => 'inchoo_fiskalizacija/adminhtml_edit_renderer_jir'
         ));
 
         $this->addColumn('zast_kod', array(
@@ -130,6 +130,9 @@ class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Grid extends Mage_Adminhtml_Bloc
             'sortable' => true,
             'index' => 'customer_notified',
         ));
+
+        $this->addExportType('*/*/exportCsv', Mage::helper('sales')->__('CSV'));
+        $this->addExportType('*/*/exportExcel', Mage::helper('sales')->__('Excel XML'));
 
         return parent::_prepareColumns();
     }

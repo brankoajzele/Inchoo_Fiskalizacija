@@ -30,31 +30,22 @@
  * @copyright   Copyright (c) Inchoo (http://inchoo.net/)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Renderer_Parentid extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
+class Inchoo_Fiskalizacija_Block_Adminhtml_Edit_Renderer_Jir extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
 {
-    protected $_values;
-
     public function render(Varien_Object $row)
     {
-        /** @var $row Inchoo_Fiskalizacija_Model_Invoice */
+        $jir = $row->getJir();
+        $jir = trim($jir);
 
-        $url = null;
-
-        if ($row->getParentEntityType() == Inchoo_Fiskalizacija_Model_Observer::FISCAL_EVENT_TYPE_INVOICE) {
-            $url = $this->getUrl('*/sales_invoice/view', array('invoice_id'=>$row->getParentEntityId()));
+        if (!empty($jir)) {
+            return $jir;
         }
 
-        if ($row->getParentEntityType() == Inchoo_Fiskalizacija_Model_Observer::FISCAL_EVENT_TYPE_CREDITMEMO) {
-            $url = $this->getUrl('*/sales_creditmemo/view', array('creditmemo_id'=>$row->getParentEntityId()));
-        }
-
-        $html = sprintf('<a href="%s" target="_blank">%s</a>', $url, $row->getParentEntityId());
-
-        return $html;
+        return '<span class="grid-severity-critical"><span>JIR NEDOSTAJE</span></span>';
     }
 
     public function renderExport(Varien_Object $row)
     {
-        return $row->getParentEntityId();
+        return $row->getJir();
     }
 }

@@ -217,10 +217,13 @@ class Inchoo_Fiskalizacija_Model_Observer
 
             if ($jirNode) {
                 $jir = $jirNode->nodeValue;
+                $jir = trim($jir);
                 $fiscalInvoice->setJir($jir);
                 Mage::getSingleton('adminhtml/session')->addSuccess($helper->__('JIR %s.', $jir));
                 $dt = new DateTime('now'); /* $dt->format('Y-m-d H:i:s') */
-                $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
+                if (!empty($jir)) {
+                    $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
+                }
             } else {
 
                 Mage::log($response->getRawBody(), null, $errorLogFile, true);
@@ -231,7 +234,7 @@ class Inchoo_Fiskalizacija_Model_Observer
                     $PorukaGreske = $PorukaGreskeNode->nodeValue;
                     Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $PorukaGreske));
                 } else {
-                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: -- N/A --.', $response->getStatus()));
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $response->getMessage()));
                 }
 
                 Mage::log($response->getRawBody(), null, sprintf('fiscalInvoice_%s_%s.log', $fiscalInvoice->getId(), time()), true);
@@ -242,13 +245,16 @@ class Inchoo_Fiskalizacija_Model_Observer
                 $PorukaGreske = $PorukaGreskeNode->nodeValue;
                 Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $PorukaGreske));
             } else {
-                Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: -- N/A --.', $response->getStatus()));
+                Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $response->getMessage()));
             }
 
             Mage::log($response->getRawBody(), null, $errorLogFile, true);
         }
 
-        if ($ZastKod && $jir && $BrRac) {
+        if ($ZastKod && $BrRac) {
+
+            $fiscalInvoice->setTotalRequestAttempts((int)$fiscalInvoice->getTotalRequestAttempts() + 1);
+
             $resource = Mage::getSingleton('core/resource');
             $conn = $resource->getConnection('core_write');
 
@@ -264,10 +270,11 @@ class Inchoo_Fiskalizacija_Model_Observer
                 $conn->update($resource->getTableName('sales/'.$entityType), $data, 'entity_id = '.$entity->getId());
             } catch (Exception $e) {
                 Mage::logException($e);
+                Mage::getSingleton('adminhtml/session')->addWarning($helper->__($e->getMessage()));
             }
         }
 
-        $fiscalInvoice->setTotalRequestAttempts((int)$fiscalInvoice->getTotalRequestAttempts() + 1);
+
         /* Save in order to update $fiscalInvoice with SignedXmlRequestRawBody */
         $fiscalInvoice->save();
     }
@@ -281,204 +288,115 @@ class Inchoo_Fiskalizacija_Model_Observer
      */
     public function injectFiscalBlock($observer = null)
     {
-//        var_dump($observer->getEvent()->getBlock()->getNameInLayout());
-
-        if ($observer->getEvent()->getBlock()->getNameInLayout() === 'order_info') {
-            
-            $currentUrl = Mage::helper('core/url')->getCurrentUrl();
-            $patternOrderInvoice = 'sales_order_invoice/view/invoice_id';
-            $patternInvoice = 'sales_invoice/view/invoice_id';
-            $patternOrderCreditmemo = 'sales_order_creditmemo/view/creditmemo_id';
-            $patternCreditmemo = 'sales_creditmemo/view/creditmemo_id';
-
-     
-            if (strstr($currentUrl, $patternInvoice) || strstr($currentUrl, $patternOrderInvoice) || strstr($currentUrl, $patternCreditmemo) || strstr($currentUrl, $patternOrderCreditmemo)) {
-
-                if (strstr($currentUrl, $patternInvoice)) {
-                    $entityType = self::FISCAL_EVENT_TYPE_INVOICE;
-                } else {
-                    $entityType = self::FISCAL_EVENT_TYPE_CREDITMEMO;
-                }
-
-                $fiscal = Mage::app()->getLayout()
-                                ->createBlock('Mage_Core_Block_Text', 'fiscal');
-
-                $invoice = Mage::registry('current_invoice');
-                $creditmemo = Mage::registry('current_creditmemo');
-
-                if ($invoice) {
-                    $entity = $invoice;
-                } else {
-                    $entity = $creditmemo;
-                }
-
-                $storeId = $entity->getStoreId();
-                $helper = Mage::helper('inchoo_fiskalizacija');
-
-                if ($helper->isModuleEnabled($storeId) == false) {
-                    return;
-                }
-
-
-                $fiscalInvoice = Mage::getModel('inchoo_fiskalizacija/invoice')
-                    ->getCollection()
-                    ->addFieldToFilter('parent_entity_id', $entity->getId())
-                    ->addFieldToFilter('parent_entity_type', $entityType)
-                    ->getFirstItem();
-                
-                $html = '';
-                
-                if ($entity && $entity->getId()) {
-                    
-                    if ($entity->getInchooFiskalizacijaJir()) {
-
-                        $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                        $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                        $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-
-                        $html = '<div>
-                            <!--CIS Info-->
-                            <div class="entry-edit">
-                                <div class="entry-edit-head">
-                                    <h4 class="icon-head head-cis-info">Fiskalizacija</h4>
-                                </div>
-                                <fieldset>
-                                    <div>Broj računa: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>
-                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
-                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
-                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
-                                    <div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>
-                                    <div>Zaštitni kod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>
-                                    <div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>
-                                    <div>Blagajnik (oznaka blagajnika OIB/naziv): <strong>'.$entity->getInchooFiskalizacijaBlagajnik().'</strong></div>
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="clear"></div>';                         
-                    } else {
-
-                        if ($fiscalInvoice && $fiscalInvoice->getId()) {
-
-                            if ($fiscalInvoice->getLastServiceResponseBody()) {
-                                $DOMDocument = new DOMDocument();
-                                $DOMDocument->loadXML($fiscalInvoice->getLastServiceResponseBody());
-
-                                $PorukaGreskeNode = $DOMDocument->getElementsByTagName('PorukaGreske')->item(0);
-                                if ($PorukaGreskeNode) {
-                                    $PorukaGreske = $PorukaGreskeNode->nodeValue;
-                                } else {
-                                    $PorukaGreske = '-- N/A --';
-                                }
-
-                                $urlParams = array(
-                                    'parent_entity_id' => $entity->getId(),
-                                    'parent_entity_type' => $entityType,
-                                    'order_id' => $entity->getOrder()->getId(),
-                                    'finvoice_id' => $fiscalInvoice->getId()
-                                );
-
-                                $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                                $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                                $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-
-                                $html = '<div>
-                                <!--CIS Info-->
-                                <div class="entry-edit">
-                                    <div class="entry-edit-head">
-                                        <h4 class="icon-head head-cis-info">Fiskalizacija</h4>
-                                    </div>
-                                    <fieldset>
-                                        <div>Broj računa: <strong>'.$fiscalInvoice->getBrRac().'</strong></div>
-                                        <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
-                                        <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
-                                        <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
-                                        <div>JIR: <strong>'.$fiscalInvoice->getJir().'</strong></div>
-                                        <div>OIB firme: <strong>'.$fiscalInvoice->getOib().'</strong></div>
-                                        <div>Blagajnik (oznaka blagajnika OIB/naziv): <strong>'.$fiscalInvoice->getBlagajnik().'</strong></div>
-                                        <div>Ukupno poslanih zahtjeva: <strong>'.$fiscalInvoice->getTotalRequestAttempts().'</strong></div>
-                                        <div>Posljednji CIS odgovor: <strong>'.$PorukaGreske.'</strong></div>';
-
-                                    if (!$fiscalInvoice->getJir()) {
-                                        $html .= '<div><a href="'.Mage::helper("adminhtml")->getUrl('adminhtml/inchoo_fiskalizacija/resignAndSubmit', $urlParams).'">Pregledaj/uredi RacunZahtjev i pošalji ga ponovo CIS-u</a>.</div>';
-                                    }
-
-                                    $html .='</fieldset>
-                                </div>
-                                </div>
-                                <div class="clear"></div>';
-                            } else {
-                                $urlParams = array(
-                                    'parent_entity_id' => $entity->getId(),
-                                    'parent_entity_type' => $entityType,
-                                    'order_id' => $entity->getOrder()->getId(),
-                                    'finvoice_id' => $fiscalInvoice->getId()
-                                );
-
-                                $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                                $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                                $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-
-                                $html = '<div>
-                            <!--CIS Info-->
-                            <div class="entry-edit">
-                                <div class="entry-edit-head">
-                                    <h4 class="icon-head head-cis-info">Fiskalizacija</h4>
-                                </div>
-                                <fieldset>
-                                    <div>Broj računa: <strong>'.$fiscalInvoice->getBrRac().'</strong></div>
-                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
-                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
-                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
-                                    <div>JIR: <strong>'.$fiscalInvoice->getJir().'</strong></div>
-                                    <div>Zaštitni kod: <strong>'.$fiscalInvoice->getZastKod().'</strong></div>
-                                    <div>OIB firme: <strong>'.$fiscalInvoice->getOib().'</strong></div>
-                                    <div>Blagajnik (oznaka blagajnika OIB/naziv): <strong>'.$fiscalInvoice->getBlagajnik().'</strong></div>
-                                    <div>Ukupno poslanih zahtjeva: <strong>'.$fiscalInvoice->getTotalRequestAttempts().'</strong></div>
-                                    <div><a href="'.Mage::helper("adminhtml")->getUrl('adminhtml/inchoo_fiskalizacija/resignAndSubmit', $urlParams).'">Pregledaj/uredi RacunZahtjev i pošalji ga ponovo CIS-u</a>.</div>
-                                </fieldset>
-                            </div>
-                            </div>
-                            <div class="clear"></div>';
-                            }
-
-
-                        } else {
-
-                            $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                            $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-                            $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
-
-                            $html = '<div>
-                            <!--CIS Info-->
-                            <div class="entry-edit">
-                                <div class="entry-edit-head">
-                                    <h4 class="icon-head head-cis-info">Fiskalizacija</h4>
-                                </div>
-                                <fieldset>
-                                    <div>Broj računa: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>
-                                    <div>Vrijeme kreiranja računa u sustavu: <strong>'.$dtEntityCreatedAt.'</strong></div>
-                                    <div>Vrijeme kreiranja fiskalnog računa u sustavu: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>
-                                    <div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>
-                                    <div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>
-                                    <div>Zaštitni kod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>
-                                    <div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>
-                                    <div>Blagajnik (oznaka blagajnika OIB/naziv): <strong>'.$entity->getInchooFiskalizacijaBlagajnik().'</strong></div>
-                                </fieldset>
-                            </div>
-                            </div>
-                            <div class="clear"></div>';
-                        }
-
-                    }                   
-                }
-                
-                $fiscal->setText($html);
-
-                $observer->getEvent()->getTransport()->setHtml(
-                    $observer->getEvent()->getTransport()->getHtml().$fiscal->toHtml()
-                );                 
-            }
+        if ($observer->getEvent()->getBlock()->getNameInLayout() !== 'order_info') {
+            return;
         }
+
+        $currentUrl = Mage::helper('core/url')->getCurrentUrl();
+
+        /* START Filter block inject only on "invoice or creditmemo view" pages */
+        $patternOrderInvoice = 'sales_order_invoice/view/invoice_id';
+        $patternInvoice = 'sales_invoice/view/invoice_id';
+
+        $patternOrderCreditmemo = 'sales_order_creditmemo/view/creditmemo_id';
+        $patternCreditmemo = 'sales_creditmemo/view/creditmemo_id';
+
+        if (strstr($currentUrl, $patternInvoice) || strstr($currentUrl, $patternOrderInvoice)) {
+            $entityType = self::FISCAL_EVENT_TYPE_INVOICE;
+            $entity = Mage::registry('current_invoice');
+        } elseif (strstr($currentUrl, $patternCreditmemo) || strstr($currentUrl, $patternOrderCreditmemo)) {
+            $entityType = self::FISCAL_EVENT_TYPE_CREDITMEMO;
+            $entity = Mage::registry('current_creditmemo');
+        } else {
+            return;
+        }
+        /* END Filter block inject only on "invoice or creditmemo view" pages */
+
+        $helper = Mage::helper('inchoo_fiskalizacija');
+        $storeId = $entity->getStoreId();
+
+        if ($helper->isModuleEnabled($storeId) == false) {
+            return;
+        }
+
+        /* Check if there is an fiscal invoice entry in inchoo_fiskalizacija_invoice table */
+        $fiscalInvoice = Mage::getModel('inchoo_fiskalizacija/invoice')
+                        ->getCollection()
+                        ->addFieldToFilter('parent_entity_id', $entity->getId())
+                        ->addFieldToFilter('parent_entity_type', $entityType)
+                        ->getFirstItem();
+
+        /* If there is no fiscal invoice, do not render anything - return */
+        if (!$fiscalInvoice || !$fiscalInvoice->getId()) {
+            return;
+        }
+
+        /* Start preparing output block */
+
+        $dtEntityCreatedAt = $entity->getCreatedAt();
+        if (!empty($dtEntityCreatedAt)) {
+            $dtEntityCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $entity->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+        }
+
+        $dtFiscalInvoiceCreatedAt = $fiscalInvoice->getCreatedAt();
+        if (!empty($dtFiscalInvoiceCreatedAt)) {
+            $dtFiscalInvoiceCreatedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getCreatedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+        }
+
+        $dtFiscalInvoiceJirObtainedAt = $fiscalInvoice->getJirObtainedAt();
+        if (!empty($dtFiscalInvoiceJirObtainedAt)) {
+            $dtFiscalInvoiceJirObtainedAt = Mage::helper('core')->formatDate(Mage::getModel('core/locale')->storeDate($storeId, $fiscalInvoice->getJirObtainedAt(), true), Mage_Core_Model_Locale::FORMAT_TYPE_FULL, true);
+        }
+
+        $html = '<div>
+                    <!--CIS Info-->
+                    <div class="entry-edit">
+                        <div class="entry-edit-head">
+                            <h4 class="icon-head head-cis-info">Fiskalizacija</h4>
+                        </div>
+                        <fieldset>';
+
+        /* We can either use $fiscalInvoice or $entity to fetch fiscal invoice info like JIR */
+        $html .= '<div>BrRac: <strong>'.$entity->getInchooFiskalizacijaBrRac().'</strong></div>';
+        $html .= '<div>ZastKod: <strong>'.$entity->getInchooFiskalizacijaZastKod().'</strong></div>';
+        $html .= '<div>JIR: <strong>'.$entity->getInchooFiskalizacijaJir().'</strong></div>';
+        $html .= '<div>OIB firme: <strong>'.$entity->getInchooFiskalizacijaOib().'</strong></div>';
+        $html .= '<div>Oznaka blagajnika (OIB/naziv): <strong>'.$entity->getInchooFiskalizacijaBlagajnik().'</strong></div>';
+        $html .= '<div>Vrijeme kreiranja računa: <strong>'.$dtEntityCreatedAt.'</strong></div>';
+        $html .= '<div>Vrijeme kreiranja fiskalnog računa: <strong>'.$dtFiscalInvoiceCreatedAt.'</strong></div>';
+
+        if ($entity->getInchooFiskalizacijaJir()) {
+            $html .= '<div>Vrijeme potvrđenog fiskalnog računa (JIR dohvaćen): <strong>'.$dtFiscalInvoiceJirObtainedAt.'</strong></div>';
+        }
+
+        $html .= '<div>Ukupno poslanih zahtjeva: <strong>'.$fiscalInvoice->getTotalRequestAttempts().'</strong></div>';
+
+        $urlParams = array(
+            'parent_entity_id' => $entity->getId(),
+            'parent_entity_type' => $entityType,
+            'order_id' => $entity->getOrder()->getId(),
+            'finvoice_id' => $fiscalInvoice->getId()
+        );
+
+        if (!$entity->getInchooFiskalizacijaJir()) {
+            $html .= '<div><a href="'.Mage::helper("adminhtml")->getUrl('adminhtml/inchoo_fiskalizacija/resignAndSubmit', $urlParams).'">JIR nedostaje! PONOVI zahtjev!</a></div>';
+        }
+
+        $html .= '</fieldset>
+                    </div>
+                </div>
+                <div class="clear"></div>';
+
+        $fiscal = Mage::app()->getLayout()
+            ->createBlock('Mage_Core_Block_Text', 'fiscal');
+
+        $fiscal->setText($html);
+
+        $observer->getEvent()->getTransport()->setHtml(
+            $observer->getEvent()->getTransport()->getHtml().$fiscal->toHtml()
+        );
+
+        return;
     }
 
     /**

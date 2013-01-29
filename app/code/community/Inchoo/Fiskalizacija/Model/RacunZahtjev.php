@@ -88,13 +88,19 @@ class Inchoo_Fiskalizacija_Model_RacunZahtjev
 
             if ($shippingAmount) {
 
+                $ShippingAmountOsnovica = $shippingAmount / (1 + ($shippingPDV/100));
+                $ShippingAmountIznos = $shippingAmount - $ShippingAmountOsnovica;/* Iznos Poreza */
+
+                if ($storniraj) {
+                    $ShippingAmountIznos = -abs($ShippingAmountIznos);
+                    $ShippingAmountOsnovica = -abs($ShippingAmountOsnovica);
+                }
+
                 $writer->writeComment('Shipping Amount');
                 $writer->startElementNs($ns, 'Porez', null);
                 $writer->writeElementNs($ns, 'Stopa', null, number_format($shippingPDV, 2, '.', ''));
-                $writer->writeElementNs($ns, 'Osnovica', null, number_format(($shippingAmount / (1 + ($shippingPDV/100))), 2, '.', ''));
-
-                if ($storniraj) { $shippingAmount = -abs($shippingAmount); }
-                $writer->writeElementNs($ns, 'Iznos', null, number_format($shippingAmount, 2, '.', ''));
+                $writer->writeElementNs($ns, 'Osnovica', null, number_format($ShippingAmountOsnovica, 2, '.', ''));
+                $writer->writeElementNs($ns, 'Iznos', null, number_format($ShippingAmountIznos, 2, '.', ''));
                 $writer->endElement(); /* #Porez */
             }
 
@@ -107,20 +113,28 @@ class Inchoo_Fiskalizacija_Model_RacunZahtjev
                 }
 
                 $lineItemBase = (float)($item->getRowTotal() - $item->getDiscountAmount()); /* Osnovica */
-                $lineItemTotal = (float)($lineItemBase + $item->getTaxAmount()); /* Iznos */
+                $lineItemTotal = (float)($lineItemBase + $item->getTaxAmount()); /* Iznos jednog line itema */
                 $lineItemTaxRate = round((($lineItemTotal / $lineItemBase) - 1)*100); /* Stopa */
+                $lineItemTaxAmountTotal = (float)$item->getTaxAmount(); /* Iznos poreza jednog line itema */
 
-                if ($storniraj) { $lineItemTotal = -abs($lineItemTotal); }
+                if ($storniraj) {
+                    $lineItemBase = -abs($lineItemBase); /* Osnovica */
+                    $lineItemTaxAmountTotal = -abs($lineItemTaxAmountTotal); /* Iznos */
+                }
 
                 $writer->writeComment($item->getName());
                 $writer->startElementNs($ns, 'Porez', null);
                 $writer->writeElementNs($ns, 'Stopa', null, number_format($lineItemTaxRate, 2, '.', ''));
                 $writer->writeElementNs($ns, 'Osnovica', null, number_format($lineItemBase, 2, '.', ''));
-                $writer->writeElementNs($ns, 'Iznos', null, number_format($lineItemTotal, 2, '.', ''));
+                $writer->writeElementNs($ns, 'Iznos', null, number_format($lineItemTaxAmountTotal, 2, '.', ''));
                 $writer->endElement(); /* #Porez */
             }
 
             $writer->endElement(); /* #Pdv */
+        }
+
+        if ($storniraj) {
+            $grandTotal = -abs($grandTotal);
         }
 
         $writer->writeElementNs($ns, 'IznosUkupno', null, number_format($grandTotal, '2', '.', ''));

@@ -94,13 +94,6 @@ $table = $installer->getConnection()
             Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE
         ),
         array('website_id'), array('type' => Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE))
-    ->addIndex(
-        $installer->getIdxName(
-            'inchoo_fiskalizacija/cert',
-            array('pem_public_cert_serial_number'),
-            Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE
-        ),
-        array('pem_public_cert_serial_number'), array('type' => Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE))         
     ->setComment('Fiscalization Certificates');
 $installer->getConnection()->createTable($table);
 

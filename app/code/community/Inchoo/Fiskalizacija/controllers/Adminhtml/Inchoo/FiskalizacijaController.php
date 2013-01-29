@@ -114,10 +114,25 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
 
             /* Send signed request to Fiskalizacija SOAP service */
             $response = null;
+            $storeId = $entity->getStoreId();
+
+            $CACertPath = $helper->getCertificateCaPemPath($storeId);
+            if (empty($CACertPath) || !file_exists($CACertPath)) {
+                Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Verifikacijski/root (samopotpisani) certifikat CA nedostaje.'));
+                return;
+            }
 
             try {
                 $client = new Zend_Http_Client();
-                $client->setUri($helper->getFiskalizacijaSOAPServerEndpoint($entity->getStoreId()));
+                $client->setUri($helper->getFiskalizacijaSOAPServerEndpoint($storeId));
+                $client->setConfig(array(
+                    'adapter' => 'Zend_Http_Client_Adapter_Curl',
+                    'curloptions' => array(
+                        CURLOPT_SSL_VERIFYHOST => 2,
+                        CURLOPT_SSL_VERIFYPEER => true,
+                        CURLOPT_CAINFO => $CACertPath,
+                    ),
+                ));
                 $client->setMethod(Zend_Http_Client::POST);
                 $client->setRawData($RacunZahtjevDOMDocument->saveXML());
 
@@ -125,7 +140,6 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
             } catch(Exception $e) {
                 Mage::logException($e);
                 Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server nedostupan.'));
-                $this->_redirectReferer();
                 return;
             }
 
@@ -145,10 +159,13 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
 
                 if ($jirNode) {
                     $jir = $jirNode->nodeValue;
+                    $jir = trim($jir);
                     $fiscalInvoice->setJir($jir);
                     Mage::getSingleton('adminhtml/session')->addSuccess($helper->__('JIR %s.', $jir));
                     $dt = new DateTime('now');
-                    $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
+                    if (!empty($jir)) {
+                        $fiscalInvoice->setJirObtainedAt($dt->format('Y-m-d H:i:s'));
+                    }
                 } else {
 
                     Mage::log($response->getRawBody(), null, $errorLogFile, true);
@@ -159,7 +176,7 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                         $PorukaGreske = $PorukaGreskeNode->nodeValue;
                         Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $PorukaGreske));
                     } else {
-                        Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: -- N/A --.', $response->getStatus()));
+                        Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $response->getMessage()));
                     }
 
                     Mage::log($response->getRawBody(), null, sprintf('fiscalInvoice_%s_%s.log', $fiscalInvoice->getId(), time()), true);
@@ -170,8 +187,7 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                     $PorukaGreske = $PorukaGreskeNode->nodeValue;
                     Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $PorukaGreske));
                 } else {
-                    $PorukaGreske = $PorukaGreskeNode->nodeValue;
-                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: -- N/A --.', $response->getStatus()));
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Pogreška prilikom dohvaćanja JIR-a. Status: %s. Poruka: %s.', $response->getStatus(), $response->getMessage()));
                 }
 
                 Mage::log($response->getRawBody(), null, $errorLogFile, true);
@@ -192,7 +208,10 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                 $fiscalInvoice->setBrRac($BrRac);
             }
 
-            if ($ZastKod && $jir && $BrRac) {
+            if ($ZastKod && $BrRac) {
+
+                $fiscalInvoice->setTotalRequestAttempts((int)$fiscalInvoice->getTotalRequestAttempts() + 1);
+
                 $resource = Mage::getSingleton('core/resource');
                 $conn = $resource->getConnection('core_write');
 
@@ -205,13 +224,13 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                 );
 
                 try {
-                    $conn->update($resource->getTableName('sales/'.$entityType), $data, 'entity_id = '.$entity->getId());
+                    $conn->update($resource->getTableName('sales/'.$fiscalInvoice->getParentEntityType()), $data, 'entity_id = '.$entity->getId());
                 } catch (Exception $e) {
                     Mage::logException($e);
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__($e->getMessage()));
                 }
             }
 
-            $fiscalInvoice->setTotalRequestAttempts((int)$fiscalInvoice->getTotalRequestAttempts() + 1);
             /* Save in order to update $fiscalInvoice with SignedXmlRequestRawBody */
             $fiscalInvoice->save();
         }
@@ -250,13 +269,44 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
         $helper->wrapIntoSoapEnvelope($PoslovniProstorZahtjevDOMDocument, 'PoslovniProstorZahtjev');
 
         /* Send signed request to Fiskalizacija SOAP service */
-        $client = new Zend_Http_Client();
-        $client->setUri($helper->getFiskalizacijaSOAPServerEndpoint($store));
-        $client->setMethod(Zend_Http_Client::POST);
-        $client->setRawData($PoslovniProstorZahtjevDOMDocument->saveXML());
+//        $client = new Zend_Http_Client();
+//        $client->setUri($helper->getFiskalizacijaSOAPServerEndpoint($store));
+//        $client->setMethod(Zend_Http_Client::POST);
+//        $client->setRawData($PoslovniProstorZahtjevDOMDocument->saveXML());
+//
+//
+//        $response = $client->request();
 
+        /* Send signed request to Fiskalizacija SOAP service */
+        $response = null;
 
-        $response = $client->request();
+        $CACertPath = $helper->getCertificateCaPemPath($store);
+        if (empty($CACertPath) || !file_exists($CACertPath)) {
+            Mage::getSingleton('adminhtml/session')->addWarning($helper->__('Verifikacijski/root (samopotpisani) certifikat CA nedostaje.'));
+            return;
+        }
+
+        try {
+            $client = new Zend_Http_Client();
+            $client->setUri($helper->getFiskalizacijaSOAPServerEndpoint($store));
+            $client->setConfig(array(
+                'adapter' => 'Zend_Http_Client_Adapter_Curl',
+                'curloptions' => array(
+                    CURLOPT_SSL_VERIFYHOST => 2,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                    CURLOPT_CAINFO => $CACertPath,
+                ),
+            ));
+            $client->setMethod(Zend_Http_Client::POST);
+            $client->setRawData($PoslovniProstorZahtjevDOMDocument->saveXML());
+
+            $response = $client->request();
+        } catch(Exception $e) {
+            Mage::logException($e);
+            Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server nedostupan.'));
+            return;
+        }
+
 
         $DOMDocument = new DOMDocument();
         $DOMDocument->loadXML($response->getBody());    
@@ -271,7 +321,7 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
                     $PorukaGreske = $PorukaGreskeNode->nodeValue;
                     Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server status odgovora: %s. Poruka odgovora: %s.', $response->getStatus(), $PorukaGreske));
                 } else {
-                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server status odgovora: %s. Poruka odgovora: -- nepoznato --.', $response->getStatus()));
+                    Mage::getSingleton('adminhtml/session')->addWarning($helper->__('CIS server status odgovora: %s. Poruka odgovora: %s.', $response->getStatus(), $response->getMessage()));
                 }            
             Mage::log($response->getRawBody(), null, $errorLogFile, true);
         }        
@@ -340,5 +390,20 @@ class Inchoo_Fiskalizacija_Adminhtml_Inchoo_FiskalizacijaController extends Mage
         }
 
         $this->_redirectReferer();
+    }
+
+    public function exportCsvAction()
+    {
+        $fileName   = sprintf('fiskalni_racuni_%s.csv', date('d.m.Y-H.i.s'));
+        $grid       = $this->getLayout()->createBlock('inchoo_fiskalizacija/adminhtml_edit_grid');
+
+        $this->_prepareDownloadResponse($fileName, $grid->getCsvFile());
+    }
+
+    public function exportExcelAction()
+    {
+        $fileName   = sprintf('fiskalni_racuni_%s.xml', date('d.m.Y-H.i.s'));
+        $grid       = $this->getLayout()->createBlock('inchoo_fiskalizacija/adminhtml_edit_grid');
+        $this->_prepareDownloadResponse($fileName, $grid->getExcelFile($fileName));
     }
 }

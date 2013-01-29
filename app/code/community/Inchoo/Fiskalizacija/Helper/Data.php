@@ -179,11 +179,21 @@ class Inchoo_Fiskalizacija_Helper_Data extends Mage_Core_Helper_Data
         $oznakaPoslovnogProstora = $this->getPoslovniProstorOznPoslProstora();
         $oznakaNaplatnogUredaja = $this->getOznNapUr();
 
+        /*
+         * Porezna uprava ne provjerava zaštitni kod ali na njezin zahtjev obveznik fiskalizacije,
+         * temeljem istih ulaznih parametara, mora kreirati zaštitni kod jednak onome s računa.
+         *
+         * Dakle, ovaj kod dolje je nepotreban, ne treba slati "-" za storne račune.
+
         if ($storniraj) {
             $ukupniIznosRacuna = '-'.number_format($invoice->getGrandTotal(), '2', '.', '');
         } else {
             $ukupniIznosRacuna = number_format($invoice->getGrandTotal(), '2', '.', '');
         }
+
+        */
+
+        $ukupniIznosRacuna = number_format($invoice->getGrandTotal(), '2', '.', '');
         
         $medjurezultat = $oib;
         $medjurezultat .= $datumVrijemeIzdavanjaRacuna;
