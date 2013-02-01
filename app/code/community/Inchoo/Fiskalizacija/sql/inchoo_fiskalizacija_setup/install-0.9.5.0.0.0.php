@@ -36,13 +36,6 @@ $installer = $this;
 
 $installer->startSetup();
 
-/* START Cleanup, full remove */
-$installer->run("
-DROP TABLE IF EXISTS {$installer->getTable('inchoo_fiskalizacija/cert')};
-DROP TABLE IF EXISTS {$installer->getTable('inchoo_fiskalizacija/invoice')};
-");
-/* END Cleanup, full remove */
-
 $table = $installer->getConnection()
     ->newTable($installer->getTable('inchoo_fiskalizacija/cert'))
     ->addColumn('cert_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
