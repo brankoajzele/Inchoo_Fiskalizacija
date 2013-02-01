@@ -35,7 +35,7 @@
 <config>
     <modules>
         <Inchoo_Fiskalizacija>
-            <version>1.0.0.0.0.0</version>
+            <version>0.9.5.0.0.0</version>
         </Inchoo_Fiskalizacija>
     </modules>    
     <global>
