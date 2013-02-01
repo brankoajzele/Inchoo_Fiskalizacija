@@ -44,7 +44,6 @@
                 <class>Inchoo_Fiskalizacija_Model</class>
                 <resourceModel>inchoo_fiskalizacija_resource</resourceModel>
             </inchoo_fiskalizacija>
-            
             <inchoo_fiskalizacija_resource>
                 <class>Inchoo_Fiskalizacija_Model_Resource</class>
                 <entities>
@@ -127,7 +126,6 @@
                     </inchoo_fiskalizacija_injectFiscalBlock>                 
                 </observers>                
             </core_block_abstract_to_html_after>
-            
             <controller_action_layout_generate_blocks_after>
                 <observers>
                     <inchoo_fiskalizacija_injectPPConfigJS>
@@ -206,5 +204,3 @@ purchaseorder=G]]>
         </jobs>
     </crontab>
 </config>
-
-
