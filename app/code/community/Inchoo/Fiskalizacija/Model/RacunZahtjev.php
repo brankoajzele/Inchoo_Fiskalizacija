@@ -68,12 +68,12 @@ class Inchoo_Fiskalizacija_Model_RacunZahtjev
         $writer->writeAttribute('Id', $UriId);
         $writer->startElementNs($ns, 'Zaglavlje', null);
         $writer->writeElementNs($ns, 'IdPoruke', null, $this->_helper->getUUIDv4());
-        $writer->writeElementNs($ns, 'DatumVrijeme', null, Mage::getModel('core/locale')->storeDate($store, null, true)->toString('DD.MM.YYYYTHH:mm:ss'));
+        $writer->writeElementNs($ns, 'DatumVrijeme', null, Mage::getModel('core/locale')->storeDate($store, null, true)->toString('dd.MM.YYYYTHH:mm:ss'));
         $writer->endElement(); /* #Zaglavlje */
         $writer->startElementNs($ns, 'Racun', null);
         $writer->writeElementNs($ns, 'Oib', null, $this->_helper->getOib($store));
         $writer->writeElementNs($ns, 'USustPdv', null, (($this->_helper->getRacunUSustPdv($store)) ? '1' : '0'));
-        $writer->writeElementNs($ns, 'DatVrijeme', null, Mage::getModel('core/locale')->storeDate($store, $entity->getCreatedAt(), true)->toString('DD.MM.YYYYTHH:mm:ss'));
+        $writer->writeElementNs($ns, 'DatVrijeme', null, Mage::getModel('core/locale')->storeDate($store, $entity->getCreatedAt(), true)->toString('dd.MM.YYYYTHH:mm:ss'));
         $writer->writeElementNs($ns, 'OznSlijed', null, 'P'); /* P ili N => P na nivou Poslovnog prostora, N na nivou naplatnog uredaja */
         $writer->startElementNs($ns, 'BrRac', null);
         $writer->writeElementNs($ns, 'BrOznRac', null, $fiscalInvoice->getBrOznRac()); /* $fiscalInvoice->getBrOznRac => set automatically via database trigger function */
