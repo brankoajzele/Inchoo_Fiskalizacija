@@ -52,7 +52,7 @@ class Inchoo_Fiskalizacija_Model_PoslovniProstorZahtjev
         $writer->writeAttribute('Id', $UriId);
         $writer->startElementNs($ns, 'Zaglavlje', null);
         $writer->writeElementNs($ns, 'IdPoruke', null, $this->_helper->getUUIDv4());
-        $writer->writeElementNs($ns, 'DatumVrijeme', null, Mage::getModel('core/locale')->storeDate($store, null, true)->toString('DD.MM.YYYYTHH:mm:ss'));
+        $writer->writeElementNs($ns, 'DatumVrijeme', null, Mage::getModel('core/locale')->storeDate($store, null, true)->toString('dd.MM.YYYYTHH:mm:ss'));
         $writer->endElement(); /* #Zaglavlje */
         $writer->startElementNs($ns, 'PoslovniProstor', null);
         $writer->writeElementNs($ns, 'Oib', null, $this->_helper->getOib($store));
