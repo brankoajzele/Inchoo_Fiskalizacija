@@ -83,6 +83,16 @@
                 <class>Inchoo_Fiskalizacija_Block</class>
             </inchoo_fiskalizacija>
         </blocks>
+        <events>
+            <sales_order_invoice_save_after>
+                <observers>
+                    <inchoo_fiskalizacija_pushRacunZahtjevToFiscalizationService>
+                        <class>inchoo_fiskalizacija/observer</class>
+                        <method>pushRacunZahtjevToFiscalizationService</method>
+                    </inchoo_fiskalizacija_pushRacunZahtjevToFiscalizationService>
+                </observers>                
+            </sales_order_invoice_save_after>
+        </events>
     </global>
     <adminhtml>
         <events>
@@ -102,14 +112,6 @@
                     </inchoo_fiskalizacija_validateCertificate>
                 </observers>
             </sales_order_creditmemo_save_before>
-            <sales_order_invoice_save_after>
-                <observers>
-                    <inchoo_fiskalizacija_pushRacunZahtjevToFiscalizationService>
-                        <class>inchoo_fiskalizacija/observer</class>
-                        <method>pushRacunZahtjevToFiscalizationService</method>
-                    </inchoo_fiskalizacija_pushRacunZahtjevToFiscalizationService>
-                </observers>                
-            </sales_order_invoice_save_after>
             <sales_order_creditmemo_save_after>
                 <observers>
                     <inchoo_fiskalizacija_pushRacunZahtjevToFiscalizationService>
