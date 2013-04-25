@@ -74,7 +74,7 @@ class Inchoo_Fiskalizacija_Model_Cert extends Mage_Core_Model_Abstract
 
         $startDatedt = strtotime($this->getValidFrom());
         $endDatedt = strtotime($this->getValidTo());
-        $usrDatedt = strtotime(date('d.m.Y'));
+        $usrDatedt = strtotime(date('Y-m-d H:i:s'));
 
         if (!$this->getId()) {
             $errors[] = Mage::helper('inchoo_fiskalizacija')->__('Certifikat nije pronađen.');
