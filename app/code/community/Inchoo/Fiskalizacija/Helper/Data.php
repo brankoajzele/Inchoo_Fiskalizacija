@@ -56,7 +56,9 @@ class Inchoo_Fiskalizacija_Helper_Data extends Mage_Core_Helper_Data
 
     public function isModuleEnabled($moduleName = null)
     {
-        return Mage::getStoreConfig(self::CONFIG_XML_PATH_SETTINGS_ACTIVE);         
+        $isSingleStoreMode = Mage::app()->isSingleStoreMode();
+        $store = $isSingleStoreMode ? Mage::app()->getDefaultStoreView() : Mage::app()->getStore();
+        return Mage::getStoreConfig(self::CONFIG_XML_PATH_SETTINGS_ACTIVE, $store);
     }
     
     public function getOib($store = null)
