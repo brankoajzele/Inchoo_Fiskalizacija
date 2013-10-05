@@ -54,9 +54,9 @@ class Inchoo_Fiskalizacija_Helper_Data extends Mage_Core_Helper_Data
     const CONFIG_XML_PATH_Racun_NacinPlac = 'inchoo_fiskalizacija/Racun/NacinPlac';
     const CONFIG_XML_PATH_Racun_Blagajnik = 'inchoo_fiskalizacija/Racun/blagajnik';
 
-    public function isModuleEnabled($store = null)
+    public function isModuleEnabled($moduleName = null)
     {
-        return Mage::getStoreConfig(self::CONFIG_XML_PATH_SETTINGS_ACTIVE, $store);         
+        return Mage::getStoreConfig(self::CONFIG_XML_PATH_SETTINGS_ACTIVE);         
     }
     
     public function getOib($store = null)
